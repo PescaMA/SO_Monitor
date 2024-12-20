@@ -23,7 +23,7 @@ void pickup(Monitor* m, int i) {
 		
 	monitor_setSharedData(m, i, 1); // mark the philospher as hungry
 	test(m, i);  // check if philosopher can eat
-	if (monitor_getSharedData(m, i) == 2) // if the philospher isn't eating, wait
+	if (monitor_getSharedData(m, i) != 2) // if the philospher isn't eating, wait
 		monitor_cwait(m, i);
 }
 
