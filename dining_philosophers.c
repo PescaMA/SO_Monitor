@@ -54,12 +54,53 @@ int main(){
 	Monitor m;
 	monitor_init(&m, nr, nr);
 	
-	
-	// do stuff
-	
-	
+	pthread_t philosophers[nr];
+	int ids[nr];
+
+	// Toti filozofii se gandesc initial
+	for (int i = 0; i < nr; i++) {
+		monitor_setSharedData(&m, i, 0);
+	}
+
+	void* philosopher(void* arg) {
+		int id = *(int*)arg;
+
+		while (1) {
+		    // Gandire
+		    int timp_0 = rand() % 5 + 3;
+		    printf("Filozoful %d se gandeste la nemurirea sufletului timp de %d secunde.\n", id, timp_0);
+		    sleep(timp_0); // Se gandeste intre 3 si 7 secunde
+
+		    // Foamete
+		    printf("Filozofulul %d ii e foame.\n", id);
+		    pickup(&m, id);
+
+		    // Mancare
+		    int timp_2 = rand() % 3 + 1;
+		    printf("Filozoful %d mananca timp de %d secunde.\n", id, timp_2);
+		    sleep(timp_2); // Mananca intre 1 si 3 secunde
+
+		    // Gata
+		    printf("Filozoful %d a terminat de mancat si se gandeste iar la nemurirea sufletului.\n", id);
+		    putdown(&m, id);
+		}
+
+		return NULL;
+	}
+
+	// Threaduri pentru fiecare filozof
+	for (int i = 0; i < nr; i++) {
+		ids[i] = i;
+		pthread_create(&philosophers[i], NULL, philosopher, &ids[i]);
+	}
+
+	// Unim threadurile
+	for (int i = 0; i < nr; i++) {
+		pthread_join(philosophers[i], NULL);
+	}
+
+
 	monitor_destroy(&m);
 	return 0;
 }
-
 
