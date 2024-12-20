@@ -70,38 +70,49 @@ void* monitor_runFunction(Monitor* monitor, void* f(void*), void* a){
 	return result;
 }
 
-/// wait on condition
 void monitor_cwait(Monitor* monitor, int condition_index) {
-    if (condition_index < 0 || condition_index >= monitor->condition_count) {
+
+    pthread_mutex_lock(&monitor->mutex);
+	bool invalid = condition_index < 0 || condition_index >= monitor->condition_count;
+    pthread_mutex_unlock(&monitor->mutex);
+	
+
+    if (invalid) {
         printf("Index de conditie invalid.\n");
         exit(1);
     }
 
-		//  pthread_mutex_lock(&monitor->mutex);
-		/// trebuie ceva facut cu entryQueue?
-		/// addNodeAtEnd(monitor->entryQueue,(void*)pthread_self()); // Store thread ID
-    // pthread_mutex_unlock(&monitor->mutex);
+    pthread_mutex_lock(&monitor->mutex);
+	bool blocked = monitor->condition[condition_index] == 0;
+    pthread_mutex_unlock(&monitor->mutex);
 
-    while (monitor->condition[condition_index] == 0) {
+    while (blocked) {
         sched_yield(); // Let other threads run (puts itself on the back of cpu thread queue).
+    	pthread_mutex_lock(&monitor->mutex);
+		blocked = monitor->condition[condition_index] == 0;
+    	pthread_mutex_unlock(&monitor->mutex);
     }
 
+	pthread_mutex_lock(&monitor->mutex);
+	monitor->condition[condition_index] = 0;
+	pthread_mutex_unlock(&monitor->mutex);
 }
 
 /// signal condition finished
 void monitor_csignal(Monitor* monitor, int condition_index) {
-    if (condition_index < 0 || condition_index >= monitor->condition_count) {
-				printf("Index de conditie invalid.\n");
+
+    pthread_mutex_lock(&monitor->mutex);
+	bool invalid = condition_index < 0 || condition_index >= monitor->condition_count;
+    pthread_mutex_unlock(&monitor->mutex);
+	
+
+    if (invalid) {
+		printf("Index de conditie invalid.\n");
         exit(1);
     }
 
     pthread_mutex_lock(&monitor->mutex);
-
-		monitor->condition[condition_index] = 1;
-
-		/// trebuie ceva facut cu entryQueue?
-		/// monitor->entryQueue = deleteNode(monitor->entryQueue); // Remove one thread from the entryQueue
-
+	monitor->condition[condition_index] = 1;
     pthread_mutex_unlock(&monitor->mutex);
 }
 
