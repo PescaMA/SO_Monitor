@@ -135,10 +135,3 @@ void monitor_csignal(Monitor* monitor, int condition_index) {
 }
 
 
-/// testing:
-int main(){
-	Monitor a;
-	monitor_init(&a,1,1);
-	monitor_destroy(&a);
-	return 0;
-}
