@@ -54,17 +54,17 @@ void monitor_init(Monitor* monitor, int shared_data_count,int condition_count) {
 	}
 	monitor->shared_data_count = shared_data_count;
 	monitor->shared_data = (int*)malloc(shared_data_count * sizeof(monitor_data));
-	
+
 	if(condition_count < 0){
 		printf("Cannot have less than zero condition variables.\n");
 		exit(1);
 	}
 	monitor->condition_count = condition_count;
 	monitor->condition = (int*)malloc(condition_count * sizeof(monitor_condition));
-	
+
 	for(int i=0; i < condition_count; i++)
 		monitor->condition[i] = 1; /// all conditions are initially available.
-		
+
 }
 
 void monitor_destroy(Monitor* monitor) {
@@ -78,7 +78,9 @@ int monitor_setSharedData(Monitor* monitor, int i, monitor_data value){
 		printf("Shared data index outside of bounds.\n");
 		exit(1);
 	}
+	pthread_mutex_lock(&(monitor->mutex));
 	monitor->shared_data[i] = value;
+	pthread_mutex_unlock(&(monitor->mutex));
 }
 
 int monitor_getSharedData(Monitor* monitor, int i){
@@ -89,7 +91,7 @@ int monitor_getSharedData(Monitor* monitor, int i){
 	pthread_mutex_lock(&(monitor->mutex));
 	return monitor->shared_data[i];
 	pthread_mutex_unlock(&(monitor->mutex));
-	
+
 }
 
 void* monitor_runFunction(Monitor* monitor, void* f(void*), void* a){
@@ -105,16 +107,16 @@ void monitor_cwait(Monitor* monitor, int condition_index) {
         printf("Index de conditie invalid.\n");
         exit(1);
     }
-		
+
 		//  pthread_mutex_lock(&monitor->mutex);
 		/// trebuie ceva facut cu entryQueue?
 		/// addNodeAtEnd(monitor->entryQueue,(void*)pthread_self()); // Store thread ID
     // pthread_mutex_unlock(&monitor->mutex);
-		
+
     while (monitor->condition[condition_index] == 0) {
         sched_yield(); // Let other threads run (puts itself on the back of cpu thread queue).
     }
-		
+
 }
 
 /// signal condition finished
@@ -125,9 +127,9 @@ void monitor_csignal(Monitor* monitor, int condition_index) {
     }
 
     pthread_mutex_lock(&monitor->mutex);
-		
+
 		monitor->condition[condition_index] = 1;
-		
+
 		/// trebuie ceva facut cu entryQueue?
 		/// monitor->entryQueue = deleteNode(monitor->entryQueue); // Remove one thread from the entryQueue
 
