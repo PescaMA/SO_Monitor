@@ -32,6 +32,7 @@ void addNodeAtEnd(Node* node, void* data){
 }
 
 typedef int monitor_condition;
+typedef int monitor_data;
 
 /// THE MONITOR STRUCT
 typedef struct Monitor {
@@ -40,7 +41,7 @@ typedef struct Monitor {
 	int condition_count;
 	monitor_condition* condition;
 	int shared_data_count;
-	int* shared_data;
+	monitor_data* shared_data;
 } Monitor;
 
 void monitor_init(Monitor* monitor, int shared_data_count,int condition_count) {
@@ -52,7 +53,7 @@ void monitor_init(Monitor* monitor, int shared_data_count,int condition_count) {
 		exit(1);
 	}
 	monitor->shared_data_count = shared_data_count;
-	monitor->shared_data = (int*)malloc(shared_data_count * sizeof(int));
+	monitor->shared_data = (int*)malloc(shared_data_count * sizeof(monitor_data));
 	
 	if(condition_count < 0){
 		printf("Cannot have less than zero condition variables.\n");
@@ -70,6 +71,14 @@ void monitor_destroy(Monitor* monitor) {
 	pthread_mutex_destroy(&monitor->mutex);
 	free(monitor->shared_data);
 	free(monitor->condition);
+}
+
+int monitor_setSharedData(Monitor* monitor, int i, monitor_data value){
+	if(i<0 || i > monitor->shared_data_count){
+		printf("Shared data index outside of bounds.\n");
+		exit(1);
+	}
+	monitor->shared_data[i] = value;
 }
 
 int monitor_getSharedData(Monitor* monitor, int i){
