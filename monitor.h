@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdlib.h> /// for free
 #include <stdio.h> /// printf
+#include <stdbool.h> /// bool
 
 typedef int monitor_condition;
 typedef int monitor_data;
