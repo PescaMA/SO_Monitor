@@ -2,41 +2,11 @@
 #include <stdlib.h> /// for free
 #include <stdio.h> /// printf
 
-/// simply linked list implementation:
-typedef struct Node{
-	void* data;
-	struct Node* next;
-} Node;
-Node *createNode(void* data) {
-    Node *newNode = (Node *)malloc(sizeof(Node));
-    newNode->data = data;
-    newNode->next = NULL;
-    return newNode;
-}
-Node* deleteNode(Node* node){
-	if(node == NULL)
-		return NULL;
-	Node* nextNode = node->next;
-	free(node);
-	return node = nextNode;
-}
-void addNodeAtEnd(Node* node, void* data){
-	Node* new_node = createNode(data);
-	if (node == NULL) {
-		node = new_node;
-		return;
-	}
-	Node* temp = node;
-	while (temp->next != NULL) temp = temp->next;
-	temp->next = new_node;
-}
-
 typedef int monitor_condition;
 typedef int monitor_data;
 
 /// THE MONITOR STRUCT
 typedef struct Monitor {
-	Node* entryQueue; /// nici nu am folosit lol
 	pthread_mutex_t mutex;
 	int condition_count;
 	monitor_condition* condition;
@@ -45,7 +15,6 @@ typedef struct Monitor {
 } Monitor;
 
 void monitor_init(Monitor* monitor, int shared_data_count,int condition_count) {
-	monitor->entryQueue = NULL;
 	pthread_mutex_init(&monitor->mutex, NULL);
 
 	if(shared_data_count < 0){
